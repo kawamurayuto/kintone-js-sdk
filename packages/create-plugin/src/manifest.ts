@@ -108,11 +108,11 @@ const answer2Manifest = (answers: Answers): Manifest => {
 /**
  * Build the manifest setting
  * @param answers
- * @param templateType
+ * @param templateType - Built-in template name or local directory path
  */
 export const buildManifest = (
   answers: Answers,
-  templateType: TemplateType,
+  templateType: TemplateType | string,
 ): Manifest => {
   let manifest = {
     ...(templateType === "modern" ? modernManifest : minimumManifest),

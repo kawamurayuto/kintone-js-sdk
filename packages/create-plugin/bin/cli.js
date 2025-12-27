@@ -8,6 +8,8 @@ const run = require("../dist/src/index");
 const { getDefaultLang } = require("../dist/src/lang");
 const {
   isValidTemplateType,
+  isLocalTemplatePath,
+  validateLocalTemplate,
   SUPPORT_TEMPLATE_TYPE,
 } = require("../dist/src/template");
 
@@ -19,7 +21,12 @@ const cli = meow(
     --lang Using language (en or ja)
     --template A template for a generated plug-in (${SUPPORT_TEMPLATE_TYPE.join(
       ","
-    )}: the default value is minimum)
+    )} or a local directory path: the default value is minimum)
+  Examples
+    $ create-kintone-plugin my-plugin
+    $ create-kintone-plugin my-plugin --template modern
+    $ create-kintone-plugin my-plugin --template ./my-custom-template
+    $ create-kintone-plugin my-plugin --template /path/to/template
 `,
   {
     flags: {
@@ -48,11 +55,23 @@ if (lang !== "ja" && lang !== "en") {
   cli.showHelp();
 }
 
-if (!isValidTemplateType(template)) {
+// Validate template: either a built-in template or a valid local path
+if (!isValidTemplateType(template) && !isLocalTemplatePath(template)) {
   console.error(
-    `--template option only supports ${SUPPORT_TEMPLATE_TYPE.join(",")}`
+    `--template option only supports ${SUPPORT_TEMPLATE_TYPE.join(",")} or a local directory path`
   );
   cli.showHelp();
+}
+
+// If it's a local path, validate the template directory
+if (isLocalTemplatePath(template)) {
+  if (!validateLocalTemplate(template)) {
+    console.error(
+      `Invalid template directory: ${template}\n` +
+      `The template directory must exist and contain a package.json file.`
+    );
+    process.exit(1);
+  }
 }
 
 run(directory, lang, template);

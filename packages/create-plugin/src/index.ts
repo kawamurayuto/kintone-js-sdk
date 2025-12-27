@@ -65,9 +65,9 @@ ${m("developerSite")}
  * Run create-kintone-plugin script
  * @param outputDir
  * @param lang
- * @param templateType
+ * @param templateType - Built-in template name or local directory path
  */
-const run = (outputDir: string, lang: Lang, templateType: TemplateType) => {
+const run = (outputDir: string, lang: Lang, templateType: TemplateType | string) => {
   const m = getBoundMessage(lang);
   verifyOutputDirectory(outputDir, lang);
   printLog(`

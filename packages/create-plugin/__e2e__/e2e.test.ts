@@ -25,6 +25,9 @@ import {
   createKintonePluginCommand,
   minimumTemplate,
   modernTemplate,
+  localTemplate,
+  invalidLocalTemplate,
+  nonexistentLocalTemplate,
 } from "./fixtures";
 
 export type TestPattern = {
@@ -67,6 +70,9 @@ describe("create-plugin", function () {
     languageJA,
     minimumTemplate,
     modernTemplate,
+    localTemplate,
+    invalidLocalTemplate,
+    nonexistentLocalTemplate,
     emptyOutputDir,
     existOutputDir,
     forbiddenCharacters,

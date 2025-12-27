@@ -17,6 +17,43 @@ export const isValidTemplateType = (templateType: string) => {
 };
 
 /**
+ * Check if the template is a local directory path
+ * @param templatePath
+ */
+export const isLocalTemplatePath = (templatePath: string): boolean => {
+  return (
+    path.isAbsolute(templatePath) ||
+    templatePath.startsWith("./") ||
+    templatePath.startsWith("../") ||
+    templatePath.startsWith(".\\") ||
+    templatePath.startsWith("..\\")
+  );
+};
+
+/**
+ * Validate if the local template directory exists and has required structure
+ * @param templatePath
+ */
+export const validateLocalTemplate = (templatePath: string): boolean => {
+  if (!fs.existsSync(templatePath)) {
+    return false;
+  }
+
+  const stat = fs.statSync(templatePath);
+  if (!stat.isDirectory()) {
+    return false;
+  }
+
+  // Check if package.json exists in the template
+  const packageJsonPath = path.join(templatePath, "package.json");
+  if (!fs.existsSync(packageJsonPath)) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
  * Return a template type corresponding to the manifest
  * @param manifest
  */
