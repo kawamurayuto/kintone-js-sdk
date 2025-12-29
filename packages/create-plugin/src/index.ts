@@ -30,8 +30,12 @@ const getSuccessCreatedPluginMessage = (
   outputDir: string,
   enablePluginUploader: boolean,
   lang: Lang,
+  skipInstall = false,
 ) => {
   const m = getBoundMessage(lang);
+
+  const installStep = skipInstall ? "  npm install\n" : "";
+
   return `
 
 Success! Created ${manifest.name.en} at ${outputDir}
@@ -53,7 +57,7 @@ ${m("nextAction")}
 ${enablePluginUploader ? m("howToUsePluginUploader") : ""}
 
   cd ${outputDir}
-  npm start
+${installStep}  npm start
 
 ${m("lastMessage")}
 ${m("developerSite")}
@@ -102,6 +106,7 @@ const run = (
           outputDir,
           enablePluginUploader,
           lang,
+          skipInstall,
         ),
       );
     })
