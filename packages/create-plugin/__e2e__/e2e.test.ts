@@ -26,6 +26,7 @@ import {
   minimumTemplate,
   modernTemplate,
   localTemplate,
+  outputDirOption,
 } from "./fixtures";
 
 export type TestPattern = {
@@ -69,6 +70,7 @@ describe("create-plugin", function () {
     minimumTemplate,
     modernTemplate,
     localTemplate,
+    outputDirOption,
     emptyOutputDir,
     existOutputDir,
     forbiddenCharacters,
@@ -97,7 +99,17 @@ describe("create-plugin", function () {
       if (expected.success !== undefined) {
         assert(response.status === 0, "Failed to create plugin");
 
-        const pluginDir = path.resolve(workingDir, input.outputDir);
+        // Determine the actual plugin directory path
+        // If --output-dir is specified, the plugin is created at <output-dir>/<directory>
+        let pluginDir: string;
+        const outputDirMatch = input.commandArgument?.match(/--output-dir\s+(\S+)/);
+        if (outputDirMatch) {
+          const parentDir = outputDirMatch[1];
+          pluginDir = path.resolve(workingDir, parentDir, input.outputDir);
+        } else {
+          pluginDir = path.resolve(workingDir, input.outputDir);
+        }
+
         assert.ok(fs.existsSync(pluginDir), "plugin dir is not created.");
 
         const actualManifestJson = readPluginManifestJson(
