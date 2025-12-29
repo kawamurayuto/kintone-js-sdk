@@ -126,6 +126,7 @@ export const pattern: TestPattern = {
           required_params: ["customParam1", "customParam2"], // Should use custom params from manifest.template.json
         },
       },
+      excludedFiles: ["manifest.template.json"], // manifest.template.json should NOT be copied to the generated plugin
     },
   },
 };

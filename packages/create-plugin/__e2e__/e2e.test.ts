@@ -42,6 +42,7 @@ export type TestPattern = {
   expected: {
     success?: {
       manifestJson: { [key: PropertyKey]: unknown };
+      excludedFiles?: string[]; // Files that should NOT exist in the generated plugin
     };
     failure?: {
       stdout?: string;
@@ -117,6 +118,17 @@ describe("create-plugin", function () {
           input.template,
         );
         assertObjectIncludes(actualManifestJson, expected.success.manifestJson);
+
+        // Check that excluded files do not exist in the generated plugin
+        if (expected.success.excludedFiles) {
+          for (const excludedFile of expected.success.excludedFiles) {
+            const excludedPath = path.resolve(pluginDir, excludedFile);
+            assert.ok(
+              !fs.existsSync(excludedPath),
+              `Excluded file should not exist: ${excludedFile}`,
+            );
+          }
+        }
       }
 
       if (expected.failure !== undefined) {
