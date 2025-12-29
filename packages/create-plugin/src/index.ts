@@ -67,7 +67,11 @@ ${m("developerSite")}
  * @param lang
  * @param templateType - Built-in template name or local directory path
  */
-const run = (outputDir: string, lang: Lang, templateType: TemplateType | string) => {
+const run = (
+  outputDir: string,
+  lang: Lang,
+  templateType: TemplateType | string,
+) => {
   const m = getBoundMessage(lang);
   verifyOutputDirectory(outputDir, lang);
   printLog(`
