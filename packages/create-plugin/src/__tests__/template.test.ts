@@ -3,9 +3,12 @@ import {
   isNecessaryFile,
   getTemplateType,
   processTemplateFile,
+  isLocalTemplatePath,
+  validateLocalTemplate,
 } from "../template";
 import createBaseManifest from "./helpers/baseManifest";
 import { promises as fs } from "fs";
+import * as fsSync from "fs";
 import path from "path";
 import os from "os";
 
@@ -13,6 +16,72 @@ describe("template", () => {
   describe("getTemplateType", () => {
     it("should return be minimum", () => {
       assert.strictEqual(getTemplateType(createBaseManifest()), "minimum");
+    });
+  });
+
+  describe("isLocalTemplatePath", () => {
+    it("should return true for absolute paths (platform-specific)", () => {
+      // Test absolute path for the current platform
+      const absolutePath = path.resolve("/absolute/path");
+      assert(isLocalTemplatePath(absolutePath));
+    });
+
+    it("should return true for relative paths starting with ./", () => {
+      assert(isLocalTemplatePath("./relative/path"));
+      assert(isLocalTemplatePath(".\\relative\\path"));
+    });
+
+    it("should return true for relative paths starting with ../", () => {
+      assert(isLocalTemplatePath("../parent/path"));
+      assert(isLocalTemplatePath("..\\parent\\path"));
+    });
+
+    it("should return false for built-in template names", () => {
+      assert(!isLocalTemplatePath("minimum"));
+      assert(!isLocalTemplatePath("modern"));
+    });
+
+    it("should return false for other strings", () => {
+      assert(!isLocalTemplatePath("template-name"));
+      assert(!isLocalTemplatePath("my-template"));
+    });
+  });
+
+  describe("validateLocalTemplate", () => {
+    let tempDir: string;
+
+    beforeEach(() => {
+      tempDir = fsSync.mkdtempSync(
+        path.join(os.tmpdir(), "test-validate-template-"),
+      );
+    });
+
+    afterEach(() => {
+      fsSync.rmSync(tempDir, { recursive: true, force: true });
+    });
+
+    it("should return true for valid template directory with package.json", () => {
+      const packageJsonPath = path.join(tempDir, "package.json");
+      fsSync.writeFileSync(packageJsonPath, JSON.stringify({ name: "test" }));
+
+      assert(validateLocalTemplate(tempDir));
+    });
+
+    it("should return false if directory does not exist", () => {
+      const nonexistentPath = path.join(tempDir, "nonexistent");
+      assert(!validateLocalTemplate(nonexistentPath));
+    });
+
+    it("should return false if path is a file, not a directory", () => {
+      const filePath = path.join(tempDir, "file.txt");
+      fsSync.writeFileSync(filePath, "content");
+
+      assert(!validateLocalTemplate(filePath));
+    });
+
+    it("should return false if package.json does not exist", () => {
+      // tempDir exists but has no package.json
+      assert(!validateLocalTemplate(tempDir));
     });
   });
   describe("isNecessaryFile", () => {
