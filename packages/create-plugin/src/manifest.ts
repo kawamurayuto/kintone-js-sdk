@@ -6,7 +6,7 @@ import type { Answers } from "./qa";
 import type { TemplateType } from "./template";
 import { isLocalTemplatePath } from "./template";
 
-const BASE_MANIFEST_FILENAME = "manifest.base.json";
+const TEMPLATE_MANIFEST_FILENAME = "manifest.template.json";
 
 const minimumManifest = {
   $schema:
@@ -115,7 +115,9 @@ const answer2Manifest = (answers: Answers): Manifest => {
  * @param manifest - Manifest object to validate
  * @returns true if valid, false otherwise
  */
-const isValidBaseManifest = (manifest: any): manifest is Partial<Manifest> => {
+const isValidTemplateManifest = (
+  manifest: any,
+): manifest is Partial<Manifest> => {
   if (!manifest || typeof manifest !== "object") {
     return false;
   }
@@ -134,28 +136,31 @@ const isValidBaseManifest = (manifest: any): manifest is Partial<Manifest> => {
 };
 
 /**
- * Load base manifest from local template directory if it exists
+ * Load template manifest from local template directory if it exists
  * @param localTemplatePath - Local template directory path
- * @returns Base manifest object or null if the base manifest file does not exist
- * @throws Error if the base manifest file exists but is invalid
+ * @returns Template manifest object or null if the template manifest file does not exist
+ * @throws Error if the template manifest file exists but is invalid
  */
-const loadBaseManifest = (
+const loadTemplateManifest = (
   localTemplatePath: string,
 ): Partial<Manifest> | null => {
   const templatePath = path.resolve(localTemplatePath);
-  const baseManifestPath = path.join(templatePath, BASE_MANIFEST_FILENAME);
+  const templateManifestPath = path.join(
+    templatePath,
+    TEMPLATE_MANIFEST_FILENAME,
+  );
 
-  if (!fs.existsSync(baseManifestPath)) {
+  if (!fs.existsSync(templateManifestPath)) {
     return null;
   }
 
-  const content = fs.readFileSync(baseManifestPath, "utf-8");
+  const content = fs.readFileSync(templateManifestPath, "utf-8");
   const manifest = JSON.parse(content);
 
   // Validate the loaded manifest
-  if (!isValidBaseManifest(manifest)) {
+  if (!isValidTemplateManifest(manifest)) {
     throw new Error(
-      `Invalid ${BASE_MANIFEST_FILENAME} in ${baseManifestPath}: missing required keys`,
+      `Invalid ${TEMPLATE_MANIFEST_FILENAME} in ${templateManifestPath}: missing required keys`,
     );
   }
 
@@ -174,7 +179,7 @@ export const buildManifest = (
   // Determine default manifest based on template type
   let defaultManifest;
   if (isLocalTemplatePath(templateType)) {
-    defaultManifest = loadBaseManifest(templateType);
+    defaultManifest = loadTemplateManifest(templateType);
   }
 
   if (!defaultManifest) {

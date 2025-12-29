@@ -62,7 +62,7 @@ describe("manifest", () => {
       ]);
     });
 
-    describe("local template with manifest.base.json", () => {
+    describe("local template with manifest.template.json", () => {
       let tempDir: string;
 
       beforeEach(() => {
@@ -73,13 +73,16 @@ describe("manifest", () => {
         fs.rmSync(tempDir, { recursive: true, force: true });
       });
 
-      it("should load manifest.base.json from local template", () => {
-        const baseManifestPath = path.join(tempDir, "manifest.base.json");
+      it("should load manifest.template.json from local template", () => {
+        const templateManifestPath = path.join(
+          tempDir,
+          "manifest.template.json",
+        );
         const fixtureContent = fs.readFileSync(
-          path.join(__dirname, "fixtures", "manifest.base.custom.json"),
+          path.join(__dirname, "fixtures", "manifest.template.custom.json"),
           "utf-8",
         );
-        fs.writeFileSync(baseManifestPath, fixtureContent);
+        fs.writeFileSync(templateManifestPath, fixtureContent);
 
         const baseManifest = createBaseManifest();
         // @ts-ignore We can fix this using conditional types
@@ -99,7 +102,7 @@ describe("manifest", () => {
         assert.strictEqual(manifest.icon, "image/custom-icon.png");
       });
 
-      it("should fall back to minimumManifest when manifest.base.json does not exist", () => {
+      it("should fall back to minimumManifest when manifest.template.json does not exist", () => {
         const baseManifest = createBaseManifest();
         // @ts-ignore We can fix this using conditional types
         const manifest = buildManifest(
@@ -117,13 +120,16 @@ describe("manifest", () => {
         assert.strictEqual(manifest.desktop?.js?.[0], "js/desktop.js");
       });
 
-      it("should throw error when manifest.base.json is invalid (missing required keys)", () => {
-        const baseManifestPath = path.join(tempDir, "manifest.base.json");
+      it("should throw error when manifest.template.json is invalid (missing required keys)", () => {
+        const templateManifestPath = path.join(
+          tempDir,
+          "manifest.template.json",
+        );
         const fixtureContent = fs.readFileSync(
-          path.join(__dirname, "fixtures", "manifest.base.invalid.json"),
+          path.join(__dirname, "fixtures", "manifest.template.invalid.json"),
           "utf-8",
         );
-        fs.writeFileSync(baseManifestPath, fixtureContent);
+        fs.writeFileSync(templateManifestPath, fixtureContent);
 
         const baseManifest = createBaseManifest();
         assert.throws(() => {
@@ -138,12 +144,15 @@ describe("manifest", () => {
             },
             tempDir,
           );
-        }, /Invalid manifest\.base\.json.*missing required keys/);
+        }, /Invalid manifest\.template\.json.*missing required keys/);
       });
 
-      it("should throw error when manifest.base.json has invalid JSON", () => {
-        const baseManifestPath = path.join(tempDir, "manifest.base.json");
-        fs.writeFileSync(baseManifestPath, "{ invalid json }");
+      it("should throw error when manifest.template.json has invalid JSON", () => {
+        const templateManifestPath = path.join(
+          tempDir,
+          "manifest.template.json",
+        );
+        fs.writeFileSync(templateManifestPath, "{ invalid json }");
 
         const baseManifest = createBaseManifest();
         assert.throws(() => {
