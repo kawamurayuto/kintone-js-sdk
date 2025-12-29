@@ -26,8 +26,6 @@ import {
   minimumTemplate,
   modernTemplate,
   localTemplate,
-  invalidLocalTemplate,
-  nonexistentLocalTemplate,
 } from "./fixtures";
 
 export type TestPattern = {
@@ -71,8 +69,6 @@ describe("create-plugin", function () {
     minimumTemplate,
     modernTemplate,
     localTemplate,
-    invalidLocalTemplate,
-    nonexistentLocalTemplate,
     emptyOutputDir,
     existOutputDir,
     forbiddenCharacters,

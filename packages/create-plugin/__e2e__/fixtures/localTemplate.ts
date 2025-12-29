@@ -12,9 +12,9 @@ const m = getBoundMessage("en");
 
 export const pattern: TestPattern = {
   description:
-    "#JsSdkTest-LocalTemplate Should able to create a plugin with local template directory",
+    "#JsSdkTest-LocalTemplate Should use manifest.template.json from local template",
   prepareFn: ({ workingDir }: { workingDir: string }) => {
-    // Create a local template directory based on minimum template
+    // Copy minimum template to working directory
     const templateDir = path.join(workingDir, "custom-template");
     const builtInTemplateDir = path.resolve(
       __dirname,
@@ -24,14 +24,55 @@ export const pattern: TestPattern = {
       "minimum",
     );
 
-    // Copy minimum template to working directory
-    fs.cpSync(builtInTemplateDir, templateDir, { recursive: true });
+    // Copy directory recursively (Node.js 20 compatible)
+    const copyRecursive = (src: string, dest: string) => {
+      fs.mkdirSync(dest, { recursive: true });
+      const entries = fs.readdirSync(src, { withFileTypes: true });
+
+      for (const entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+
+        if (entry.isDirectory()) {
+          copyRecursive(srcPath, destPath);
+        } else {
+          fs.copyFileSync(srcPath, destPath);
+        }
+      }
+    };
+
+    copyRecursive(builtInTemplateDir, templateDir);
+
+    // Add custom manifest.template.json with all values changed
+    const customManifest = {
+      $schema:
+        "https://raw.githubusercontent.com/kintone/js-sdk/%40kintone/plugin-manifest-validator%4010.2.0/packages/plugin-manifest-validator/manifest-schema.json",
+      manifest_version: 1,
+      version: 99,
+      type: "APP",
+      desktop: {
+        js: ["js/custom-desktop.js", "js/custom-lib.js"],
+        css: ["css/custom-desktop.css"],
+      },
+      icon: "image/custom-icon.png",
+      config: {
+        html: "html/custom-config.html",
+        js: ["js/custom-config.js"],
+        css: ["css/custom-config.css"],
+        required_params: ["customParam1", "customParam2"],
+      },
+    };
+
+    fs.writeFileSync(
+      path.join(templateDir, "manifest.template.json"),
+      JSON.stringify(customManifest, null, 2),
+    );
   },
   input: {
     command: CREATE_PLUGIN_COMMAND,
     outputDir: "test-local-template",
     commandArgument: `--template ./custom-template`,
-    template: "minimum", // Use minimum for manifest verification
+    template: "minimum",
     questionsInput: [
       {
         question: m("Q_NameEn"),
@@ -39,7 +80,7 @@ export const pattern: TestPattern = {
       },
       {
         question: m("Q_DescriptionEn"),
-        answer: "Testing local template feature",
+        answer: "Testing local template with manifest.template.json",
       },
       {
         question: m("Q_SupportJa"),
@@ -71,10 +112,18 @@ export const pattern: TestPattern = {
     success: {
       manifestJson: {
         name: { en: "local-template-test" },
-        description: { en: "Testing local template feature" },
+        description: { en: "Testing local template with manifest.template.json" },
+        version: 99, // Should use custom version from manifest.template.json
         desktop: {
-          js: ["js/desktop.js"],
-          css: ["css/51-modern-default.css", "css/desktop.css"],
+          js: ["js/custom-desktop.js", "js/custom-lib.js"], // Should use custom JS files from manifest.template.json
+          css: ["css/custom-desktop.css"], // Should use custom CSS from manifest.template.json
+        },
+        icon: "image/custom-icon.png", // Should use custom icon from manifest.template.json
+        config: {
+          html: "html/custom-config.html", // Should use custom HTML from manifest.template.json
+          js: ["js/custom-config.js"], // Should use custom JS from manifest.template.json
+          css: ["css/custom-config.css"], // Should use custom CSS from manifest.template.json
+          required_params: ["customParam1", "customParam2"], // Should use custom params from manifest.template.json
         },
       },
     },
