@@ -10,6 +10,7 @@ export const pattern: TestPattern = {
   input: {
     command: CREATE_KINTONE_PLUGIN_COMMAND,
     outputDir: "test14",
+    commandArgument: "--skip-install",
     questionsInput: [
       {
         question: m("Q_NameEn"),

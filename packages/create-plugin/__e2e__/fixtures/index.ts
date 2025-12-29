@@ -13,3 +13,4 @@ export { pattern as createKintonePluginCommand } from "./createKintonePluginComm
 export { pattern as minimumTemplate } from "./minimumTemplate";
 export { pattern as modernTemplate } from "./modernTemplate";
 export { pattern as localTemplate } from "./localTemplate";
+export { pattern as outputDirOption } from "./outputDirOption";

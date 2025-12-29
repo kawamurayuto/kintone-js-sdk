@@ -15,7 +15,7 @@ export const pattern: TestPattern = {
   input: {
     command: CREATE_PLUGIN_COMMAND,
     outputDir: "test8",
-    commandArgument: `--template ${template}`,
+    commandArgument: `--template ${template} --skip-install`,
     template,
     questionsInput: [
       {

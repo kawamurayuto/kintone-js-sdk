@@ -22,6 +22,7 @@ import normalize from "normalize-path";
  * @param lang
  * @param enablePluginUploader
  * @param templateType - Built-in template name or local directory path
+ * @param skipInstall - Skip npm install after plugin creation
  */
 export const generatePlugin = async (
   outputDirectory: string,
@@ -29,6 +30,7 @@ export const generatePlugin = async (
   lang: Lang,
   enablePluginUploader: boolean,
   templateType: TemplateType | string,
+  skipInstall = false,
 ): Promise<void> => {
   // copy and build a project into the output diretory
   await buildProject(
@@ -38,7 +40,9 @@ export const generatePlugin = async (
     templateType,
   );
   // npm install
-  installDependencies(outputDirectory, lang);
+  if (!skipInstall) {
+    installDependencies(outputDirectory, lang);
+  }
 };
 
 /**

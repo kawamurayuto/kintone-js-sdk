@@ -66,11 +66,13 @@ ${m("developerSite")}
  * @param outputDir
  * @param lang
  * @param templateType - Built-in template name or local directory path
+ * @param skipInstall - Skip npm install after plugin creation
  */
 const run = (
   outputDir: string,
   lang: Lang,
   templateType: TemplateType | string,
+  skipInstall = false,
 ) => {
   const m = getBoundMessage(lang);
   verifyOutputDirectory(outputDir, lang);
@@ -89,6 +91,7 @@ const run = (
         lang,
         answers.enablePluginUploader,
         templateType,
+        skipInstall,
       );
       return [manifest, answers.enablePluginUploader];
     })

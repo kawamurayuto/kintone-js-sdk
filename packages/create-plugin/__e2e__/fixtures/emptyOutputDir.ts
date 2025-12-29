@@ -7,6 +7,7 @@ export const pattern: TestPattern = {
   input: {
     command: CREATE_PLUGIN_COMMAND,
     outputDir: "",
+    commandArgument: "--skip-install",
     questionsInput: [],
   },
   expected: {

@@ -15,7 +15,7 @@ export const pattern: TestPattern = {
   input: {
     command: CREATE_PLUGIN_COMMAND,
     outputDir: "test5",
-    commandArgument: `--lang ${lang}`,
+    commandArgument: `--lang ${lang} --skip-install`,
     questionsInput: [
       {
         question: m("Q_NameEn"),

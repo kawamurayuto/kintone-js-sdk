@@ -22,6 +22,7 @@ const cli = meow(
     --template A template for a generated plug-in (${SUPPORT_TEMPLATE_TYPE.join(
       ","
     )} or a local directory path: the default value is minimum)
+    --skip-install Skip npm install after plugin creation
   Examples
     $ create-kintone-plugin my-plugin
     $ create-kintone-plugin my-plugin --template modern
@@ -37,6 +38,10 @@ const cli = meow(
       template: {
         type: "string",
         default: "minimum",
+      },
+      skipInstall: {
+        type: "boolean",
+        default: false,
       },
     },
   }
@@ -74,4 +79,4 @@ if (isLocalTemplatePath(template)) {
   }
 }
 
-run(directory, lang, template);
+run(directory, lang, template, skipInstall);

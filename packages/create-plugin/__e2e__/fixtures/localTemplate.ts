@@ -71,7 +71,7 @@ export const pattern: TestPattern = {
   input: {
     command: CREATE_PLUGIN_COMMAND,
     outputDir: "test-local-template",
-    commandArgument: `--template ./custom-template`,
+    commandArgument: `--template ./custom-template --skip-install`,
     template: "minimum",
     questionsInput: [
       {
