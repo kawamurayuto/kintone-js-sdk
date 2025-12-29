@@ -1,4 +1,7 @@
 import assert from "assert";
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
 import { buildManifest } from "../manifest";
 
 import createBaseManifest from "./helpers/baseManifest";
@@ -57,6 +60,106 @@ describe("manifest", () => {
         "css",
         "required_params",
       ]);
+    });
+
+    describe("local template with manifest.base.json", () => {
+      let tempDir: string;
+
+      beforeEach(() => {
+        tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-template-"));
+      });
+
+      afterEach(() => {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      });
+
+      it("should load manifest.base.json from local template", () => {
+        const baseManifestPath = path.join(tempDir, "manifest.base.json");
+        const fixtureContent = fs.readFileSync(
+          path.join(__dirname, "fixtures", "manifest.base.custom.json"),
+          "utf-8",
+        );
+        fs.writeFileSync(baseManifestPath, fixtureContent);
+
+        const baseManifest = createBaseManifest();
+        // @ts-ignore We can fix this using conditional types
+        const manifest = buildManifest(
+          {
+            name: baseManifest.name,
+            description: baseManifest.name,
+            homepage_url: {},
+            supportMobile: false,
+            enablePluginUploader: false,
+          },
+          tempDir,
+        );
+
+        assert.strictEqual(manifest.version, 2);
+        assert.strictEqual(manifest.desktop?.js?.[0], "js/custom.js");
+        assert.strictEqual(manifest.icon, "image/custom-icon.png");
+      });
+
+      it("should fall back to minimumManifest when manifest.base.json does not exist", () => {
+        const baseManifest = createBaseManifest();
+        // @ts-ignore We can fix this using conditional types
+        const manifest = buildManifest(
+          {
+            name: baseManifest.name,
+            description: baseManifest.name,
+            homepage_url: {},
+            supportMobile: false,
+            enablePluginUploader: false,
+          },
+          tempDir,
+        );
+
+        assert.strictEqual(manifest.manifest_version, 1);
+        assert.strictEqual(manifest.desktop?.js?.[0], "js/desktop.js");
+      });
+
+      it("should throw error when manifest.base.json is invalid (missing required keys)", () => {
+        const baseManifestPath = path.join(tempDir, "manifest.base.json");
+        const fixtureContent = fs.readFileSync(
+          path.join(__dirname, "fixtures", "manifest.base.invalid.json"),
+          "utf-8",
+        );
+        fs.writeFileSync(baseManifestPath, fixtureContent);
+
+        const baseManifest = createBaseManifest();
+        assert.throws(() => {
+          // @ts-ignore We can fix this using conditional types
+          buildManifest(
+            {
+              name: baseManifest.name,
+              description: baseManifest.name,
+              homepage_url: {},
+              supportMobile: false,
+              enablePluginUploader: false,
+            },
+            tempDir,
+          );
+        }, /Invalid manifest\.base\.json.*missing required keys/);
+      });
+
+      it("should throw error when manifest.base.json has invalid JSON", () => {
+        const baseManifestPath = path.join(tempDir, "manifest.base.json");
+        fs.writeFileSync(baseManifestPath, "{ invalid json }");
+
+        const baseManifest = createBaseManifest();
+        assert.throws(() => {
+          // @ts-ignore We can fix this using conditional types
+          buildManifest(
+            {
+              name: baseManifest.name,
+              description: baseManifest.name,
+              homepage_url: {},
+              supportMobile: false,
+              enablePluginUploader: false,
+            },
+            tempDir,
+          );
+        });
+      });
     });
   });
 });

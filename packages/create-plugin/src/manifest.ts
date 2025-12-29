@@ -1,7 +1,12 @@
 "use strict";
 
+import * as fs from "fs";
+import * as path from "path";
 import type { Answers } from "./qa";
 import type { TemplateType } from "./template";
+import { isLocalTemplatePath } from "./template";
+
+const BASE_MANIFEST_FILENAME = "manifest.base.json";
 
 const minimumManifest = {
   $schema:
@@ -106,6 +111,58 @@ const answer2Manifest = (answers: Answers): Manifest => {
 };
 
 /**
+ * Validate if the loaded manifest has all required keys from built-in manifests
+ * @param manifest - Manifest object to validate
+ * @returns true if valid, false otherwise
+ */
+const isValidBaseManifest = (manifest: any): manifest is Partial<Manifest> => {
+  if (!manifest || typeof manifest !== "object") {
+    return false;
+  }
+
+  // Get all keys from modernManifest (which has all keys from minimumManifest too)
+  const requiredKeys = Object.keys(modernManifest);
+
+  // Check if all required keys exist in the loaded manifest
+  for (const key of requiredKeys) {
+    if (!(key in manifest)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Load base manifest from local template directory if it exists
+ * @param localTemplatePath - Local template directory path
+ * @returns Base manifest object or null if the base manifest file does not exist
+ * @throws Error if the base manifest file exists but is invalid
+ */
+const loadBaseManifest = (
+  localTemplatePath: string,
+): Partial<Manifest> | null => {
+  const templatePath = path.resolve(localTemplatePath);
+  const baseManifestPath = path.join(templatePath, BASE_MANIFEST_FILENAME);
+
+  if (!fs.existsSync(baseManifestPath)) {
+    return null;
+  }
+
+  const content = fs.readFileSync(baseManifestPath, "utf-8");
+  const manifest = JSON.parse(content);
+
+  // Validate the loaded manifest
+  if (!isValidBaseManifest(manifest)) {
+    throw new Error(
+      `Invalid ${BASE_MANIFEST_FILENAME} in ${baseManifestPath}: missing required keys`,
+    );
+  }
+
+  return manifest;
+};
+
+/**
  * Build the manifest setting
  * @param answers
  * @param templateType - Built-in template name or local directory path
@@ -114,10 +171,22 @@ export const buildManifest = (
   answers: Answers,
   templateType: TemplateType | string,
 ): Manifest => {
+  // Determine default manifest based on template type
+  let defaultManifest;
+  if (isLocalTemplatePath(templateType)) {
+    defaultManifest = loadBaseManifest(templateType);
+  }
+
+  if (!defaultManifest) {
+    defaultManifest =
+      templateType === "modern" ? modernManifest : minimumManifest;
+  }
+
   let manifest = {
-    ...(templateType === "modern" ? modernManifest : minimumManifest),
+    ...defaultManifest,
     ...answer2Manifest(answers),
   };
+
   if (answers.supportMobile) {
     manifest = {
       ...manifest,

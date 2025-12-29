@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/kintone/js-sdk/%40kintone/plugin-manifest-validator%4010.2.0/packages/plugin-manifest-validator/manifest-schema.json",
+  "manifest_version": 1,
+  "version": 2,
+  "type": "APP",
+  "desktop": {
+    "js": ["js/custom.js"],
+    "css": ["css/custom.css"]
+  },
+  "icon": "image/custom-icon.png",
+  "config": {
+    "html": "html/custom-config.html",
+    "js": ["js/custom-config.js"],
+    "css": ["css/custom-config.css"],
+    "required_params": ["custom-param"]
+  }
+}
